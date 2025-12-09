@@ -11,7 +11,11 @@ const app = new Hono();
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:8888", "https://www.example.wzdxcc.cloudns.org"],
+    origin: [
+      "http://localhost:8888",
+      "https://www.server.wzdxcc.cloudns.org",
+      "https://www.example.wzdxcc.cloudns.org",
+    ],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowHeaders: [
       "Content-Type",
