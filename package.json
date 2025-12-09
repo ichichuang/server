@@ -1,0 +1,33 @@
+{
+  "name": "ccd-server",
+  "version": "1.0.0",
+  "description": "基于 Hono 的后端 API 服务器",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:clean": "./scripts/dev.sh",
+    "build": "tsc --outDir dist",
+    "start": "node dist/index.js",
+    "vercel-build": "npm run build",
+    "kill-port": "lsof -ti:3003 | xargs kill -9 2>/dev/null || true",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hono",
+    "api",
+    "server",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "hono": "^4.0.0",
+    "@hono/node-server": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
