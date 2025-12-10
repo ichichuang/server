@@ -16,13 +16,8 @@ routerRoutes.get("/auth/routes", async (c) => {
 
   const routes = await c.services.auth.getRoutes(token);
 
-  return c.sendJson(
-    {
-      routes,
-      isSafeStorage: false,
-    },
-    "获取路由成功"
-  );
+  // 直接返回路由数组，前端拦截器会提取 data 字段
+  return c.sendJson(routes, "获取路由成功");
 });
 
 export { routerRoutes };
