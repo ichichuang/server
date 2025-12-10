@@ -1,0 +1,52 @@
+# DEVELOPER_GUIDE
+
+后端开发约定（Hono + TypeScript）
+
+## 架构与分层
+
+- 薄路由、厚服务：业务逻辑放在 `src/services/*`，路由只做 HTTP 接入。
+- DI：`servicesMiddleware` 将 services 注入到 `Context`，`src/types/hono.d.ts` 已扩展 `c.services`、`c.sendJson`。
+- 通用工具：`src/libs/*`（加密、压缩等），配置集中 `src/config/*`。
+
+## 请求验证
+
+- 使用 Zod Schema（`src/validators/schemas/*`）+ `validator("json", schema)`。
+- 在路由中直接：`const data = c.req.valid("json")`，无需手动校验。
+- 验证失败由全局 `errorHandler` 捕获并返回 `ERR_VALIDATION` 400。
+
+## 响应与加密
+
+- 成功响应统一使用 `c.sendJson(data, message)`。
+- 如需加密，返回的数据对象带上 `isSafeStorage: true`，加密密钥来自 `env.appSecret`。
+
+## 错误处理规范
+
+- 业务异常统一抛 `AppError`（如 `AppError.unauthorized("Token 无效")`）。
+- 禁止手写 `c.json({ success: false ... })`。全局 `errorHandler` 负责格式化错误响应并隐藏敏感信息。
+
+## 配置约定
+
+- 所有环境配置读取自 `src/config/env.ts`，CORS 配置在 `src/config/cors.ts`。
+- 禁止散用 `process.env`；使用 `env.*`。
+
+## 单元测试与覆盖率
+
+- 测试框架：Vitest。运行：`pnpm test` / `pnpm test:run` / `pnpm coverage`。
+- 覆盖率聚焦 `src/services/**/*.ts`，阈值：lines/statements 90%、functions 90%、branches 80。
+- Mock 依赖：使用 `vi.mock` / `MockedFunction<typeof fn>` 隔离外部依赖（如 `userData`, `tokenManager`）。
+
+## 路由示例（正确用法）
+
+```ts
+loginRoutes.post("/auth/login", validator("json", loginSchema), async (c) => {
+  const { username, password } = c.req.valid("json");
+  const res = await c.services.auth.login(username, password);
+  return c.sendJson(res, "登录成功");
+});
+```
+
+## 错误示例（请避免）
+
+- 在路由中直接查库/鉴权（应放到 service）。
+- 在路由中直接 `c.json` 返回错误（应抛 `AppError`）。
+- 直接读取 `process.env`（应使用 `env.*`）。

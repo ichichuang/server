@@ -1,36 +1,36 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { corsConfig } from "./config/cors.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { servicesMiddleware } from "./middleware/services.js";
+import { responseHandler } from "./middleware/responseHandler.js";
 import { testRoutes } from "./test/test.js";
+import { loginRoutes } from "./auth/login.js";
+import { userInfoRoutes } from "./auth/userInfo.js";
+import { routerRoutes } from "./auth/router.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();
 
+// 1. 首先注册错误处理中间件（必须在最前面，以捕获所有后续的错误）
+app.use("*", errorHandler());
+
+// 2. 注册服务中间件（依赖注入）
+app.use("*", servicesMiddleware());
+
+// 3. 注册响应处理中间件（成功响应）
+app.use("*", responseHandler());
+
 // CORS 配置 - 支持前端跨域请求
-app.use(
-  "*",
-  cors({
-    origin: [
-      "http://localhost:8888",
-      "https://www.server.wzdxcc.cloudns.org",
-      "https://www.example.wzdxcc.cloudns.org",
-    ],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-      "Access-Control-Request-Method",
-      "Access-Control-Request-Headers",
-    ],
-    credentials: true,
-    maxAge: 86400, // 24 hours
-  })
-);
+app.use("*", cors(corsConfig));
 
 // 注册测试路由
 app.route("/", testRoutes);
+
+// 注册认证相关路由
+app.route("/", loginRoutes);
+app.route("/", userInfoRoutes);
+app.route("/", routerRoutes);
 
 app.get("/", (c) => {
   return c.json({
