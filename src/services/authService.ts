@@ -1,7 +1,15 @@
 import { AppError } from "../errors/AppError.js";
-import { findUserById, findUserByUsername, verifyPassword } from "../auth/userData.js";
-import { generateToken, getUserFromToken } from "../auth/tokenManager.js";
-import type { UserInfo, LoginResponse, BackendRouteConfig } from "../auth/types.js";
+import {
+  findUserById,
+  findUserByUsername,
+  verifyPassword,
+} from "../auth/userData.js";
+import { generateToken, getUserFromToken } from "../libs/tokenManager.js";
+import type {
+  UserInfo,
+  LoginResponse,
+  BackendRouteConfig,
+} from "../auth/types.js";
 
 export interface AuthService {
   login: (username: string, password: string) => Promise<LoginResponse>;
@@ -71,7 +79,11 @@ export const createAuthService = (): AuthService => {
           meta: {
             titleKey: "router.permission.button.title",
             roles: ["admin"],
-            auths: ["permission:btn:add", "permission:btn:edit", "permission:btn:delete"],
+            auths: [
+              "permission:btn:add",
+              "permission:btn:edit",
+              "permission:btn:delete",
+            ],
             icon: "ri-building-2-line",
           },
         },
@@ -134,7 +146,10 @@ export const createAuthService = (): AuthService => {
     return userRoutes;
   };
 
-  const login = async (username: string, password: string): Promise<LoginResponse> => {
+  const login = async (
+    username: string,
+    password: string
+  ): Promise<LoginResponse> => {
     const user = findUserByUsername(username);
     if (!user || !verifyPassword(user, password)) {
       throw AppError.unauthorized("用户名或密码错误");
@@ -166,7 +181,9 @@ export const createAuthService = (): AuthService => {
     return userInfo;
   };
 
-  const getRoutes = async (token: string | null): Promise<BackendRouteConfig[]> => {
+  const getRoutes = async (
+    token: string | null
+  ): Promise<BackendRouteConfig[]> => {
     if (!token) {
       throw AppError.unauthorized("未提供认证 token");
     }
@@ -185,4 +202,3 @@ export const createAuthService = (): AuthService => {
     getRoutes,
   };
 };
-

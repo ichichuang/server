@@ -16,13 +16,13 @@ vi.mock("../../auth/userData.js", () => ({
   findUserById: vi.fn(),
 }));
 
-vi.mock("../../auth/tokenManager.js", () => ({
+vi.mock("../../libs/tokenManager.js", () => ({
   generateToken: vi.fn(),
   getUserFromToken: vi.fn(),
 }));
 
 import * as userData from "../../auth/userData.js";
-import * as tokenManager from "../../auth/tokenManager.js";
+import * as tokenManager from "../../libs/tokenManager.js";
 
 describe("authService.login", () => {
   beforeEach(() => {
