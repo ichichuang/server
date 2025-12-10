@@ -26,7 +26,7 @@ export const users: User[] = [
   },
   {
     userId: "2",
-    username: "test",
+    username: "user",
     password: "123456", // 实际应该加密存储
     roles: ["user"],
     permissions: ["read"],
