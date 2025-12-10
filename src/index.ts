@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { testRoutes } from "./test/test";
+import { testRoutes } from "./test/test.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();
