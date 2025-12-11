@@ -150,11 +150,20 @@ export const createAuthService = (): AuthService => {
     username: string,
     password: string
   ): Promise<LoginResponse> => {
+    // 第一步：检查用户名是否存在
     const user = findUserByUsername(username);
-    if (!user || !verifyPassword(user, password)) {
-      throw AppError.unauthorized("用户名或密码错误");
+    if (!user) {
+      // 使用 400 而不是 401，避免触发前端自动登出
+      // 401 应该用于已登录用户但 token 无效的情况
+      throw AppError.badRequest("用户名不存在", "ERR_USER_NOT_FOUND");
     }
 
+    // 第二步：检查密码是否正确
+    if (!verifyPassword(user, password)) {
+      throw AppError.badRequest("密码错误", "ERR_PASSWORD_INCORRECT");
+    }
+
+    // 登录成功，生成 token
     const token = generateToken(user.userId, user.username, user.roles);
     return {
       token,

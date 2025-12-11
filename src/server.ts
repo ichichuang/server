@@ -4,7 +4,7 @@ import { cors } from "hono/cors";
 import { createServer } from "net";
 import { corsConfig } from "./config/cors.js";
 import { env } from "./config/env.js";
-import { errorHandler } from "./middleware/errorHandler.js";
+import { errorHandler, onErrorHandler } from "./middleware/errorHandler.js";
 import { servicesMiddleware } from "./middleware/services.js";
 import { responseHandler } from "./middleware/responseHandler.js";
 import { testRoutes } from "./test/test.js";
@@ -17,6 +17,9 @@ const app = new Hono();
 
 // 1. 首先注册错误处理中间件（必须在最前面，以捕获所有后续的错误）
 app.use("*", errorHandler());
+
+// 1.1 同时注册 onError 处理器作为最后的安全网（确保所有错误都被捕获）
+app.onError(onErrorHandler);
 
 // 2. 注册服务中间件（依赖注入）
 app.use("*", servicesMiddleware());
