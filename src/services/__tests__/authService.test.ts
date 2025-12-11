@@ -10,7 +10,7 @@ import { createAuthService } from "../authService.js";
 import { AppError } from "../../errors/AppError.js";
 
 // Mock 依赖
-vi.mock("../../auth/userData.js", () => ({
+vi.mock("../../api/auth/userData.js", () => ({
   findUserByUsername: vi.fn(),
   verifyPassword: vi.fn(),
   findUserById: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock("../../libs/tokenManager.js", () => ({
   getUserFromToken: vi.fn(),
 }));
 
-import * as userData from "../../auth/userData.js";
+import * as userData from "../../api/auth/userData.js";
 import * as tokenManager from "../../libs/tokenManager.js";
 
 describe("authService.login", () => {
@@ -61,7 +61,7 @@ describe("authService.login", () => {
     expect(res).toEqual({ token: "token-123", isSafeStorage: true });
   });
 
-  it("密码错误应抛出 AppError.unauthorized", async () => {
+  it("密码错误应抛出 400 Bad Request", async () => {
     const service = createAuthService();
     const mockUser = {
       userId: "u1",
@@ -84,7 +84,8 @@ describe("authService.login", () => {
       AppError
     );
     await expect(service.login("admin", "badpass")).rejects.toMatchObject({
-      statusCode: 401,
+      statusCode: 400,
+      code: "ERR_PASSWORD_INCORRECT",
     });
   });
 });

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { validator } from "../middleware/validator.js";
-import { loginSchema } from "../validators/schemas/authSchemas.js";
+import { validator } from "../../middleware/validator.js";
+import { loginSchema } from "../../validators/schemas/authSchemas.js";
 import type { LoginResponse } from "./types.js";
-import type { LoginSchema } from "../validators/schemas/authSchemas.js";
+import type { LoginSchema } from "../../validators/schemas/authSchemas.js";
 
 const loginRoutes = new Hono();
 

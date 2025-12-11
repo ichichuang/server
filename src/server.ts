@@ -7,10 +7,10 @@ import { env } from "./config/env.js";
 import { errorHandler, onErrorHandler } from "./middleware/errorHandler.js";
 import { servicesMiddleware } from "./middleware/services.js";
 import { responseHandler } from "./middleware/responseHandler.js";
-import { testRoutes } from "./test/test.js";
-import { loginRoutes } from "./auth/login.js";
-import { userInfoRoutes } from "./auth/userInfo.js";
-import { routerRoutes } from "./auth/router.js";
+import { testRoutes } from "./api/test/test.js";
+import { loginRoutes } from "./api/auth/login.js";
+import { userInfoRoutes } from "./api/auth/userInfo.js";
+import { routerRoutes } from "./api/auth/router.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();

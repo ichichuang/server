@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getTokenFromHeader } from "../libs/tokenManager.js";
+import { getTokenFromHeader } from "../../libs/tokenManager.js";
 import type { UserInfo } from "./types.js";
 
 const userInfoRoutes = new Hono();

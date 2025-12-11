@@ -3,13 +3,13 @@ import {
   findUserById,
   findUserByUsername,
   verifyPassword,
-} from "../auth/userData.js";
+} from "../api/auth/userData.js";
 import { generateToken, getUserFromToken } from "../libs/tokenManager.js";
 import type {
   UserInfo,
   LoginResponse,
   BackendRouteConfig,
-} from "../auth/types.js";
+} from "../api/auth/types.js";
 
 export interface AuthService {
   login: (username: string, password: string) => Promise<LoginResponse>;
