@@ -13,6 +13,7 @@
 - 使用 Zod Schema（`src/validators/schemas/*`）+ `validator("json", schema)`。
 - 在路由中直接：`const data = c.req.valid("json")`，无需手动校验。
 - 验证失败由全局 `errorHandler` 捕获并返回 `ERR_VALIDATION` 400。
+- **注意**：登录接口的密码验证不检查长度（只检查非空），密码长度验证应在注册接口中使用。
 
 ## 响应与加密
 
@@ -23,6 +24,12 @@
 
 - 业务异常统一抛 `AppError`（如 `AppError.unauthorized("Token 无效")`）。
 - 禁止手写 `c.json({ success: false ... })`。全局 `errorHandler` 负责格式化错误响应并隐藏敏感信息。
+- **状态码选择原则**：
+  - `400 Bad Request`：请求参数错误（如登录失败、用户名不存在、密码错误）
+  - `401 Unauthorized`：已登录用户但 token 无效或过期（会触发前端自动登出）
+  - `403 Forbidden`：权限不足
+  - `404 Not Found`：资源不存在
+  - `500 Internal Server Error`：服务器内部错误
 
 ## 配置约定
 
