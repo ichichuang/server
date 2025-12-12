@@ -3,7 +3,7 @@ import { encryptAndCompressSync } from "./safeStorage.js";
 
 /**
  * 处理响应数据加密
- * 如果 data 中存在 isSafeStorage: true，则加密其他字段
+ * 如果 data 中存在 isSafeStorage: true，则加密其他字段的值（保持key不变）
  * @param data 响应数据对象
  * @returns 处理后的数据对象
  */
@@ -13,19 +13,30 @@ export const processResponseData = <T extends Record<string, any>>(
   // 检查是否存在 isSafeStorage 且为 true
   if (data && typeof data === "object" && data.isSafeStorage === true) {
     try {
-      // 创建新对象，排除 isSafeStorage 字段
-      const { isSafeStorage, ...dataToEncrypt } = data;
+      // 创建新对象，保持原有key，只加密value
+      const encryptedData: Record<string, any> = {
+        isSafeStorage: true,
+      };
 
-      // 加密其他字段
-      const encrypted = encryptAndCompressSync(dataToEncrypt);
-
-      if (encrypted) {
-        // 返回新对象，保留 isSafeStorage 标记，其他字段替换为加密字符串
-        return {
-          isSafeStorage: true,
-          encrypted,
-        } as unknown as T;
+      // 遍历所有字段，加密每个字段的值（除了 isSafeStorage）
+      for (const key in data) {
+        if (
+          key !== "isSafeStorage" &&
+          Object.prototype.hasOwnProperty.call(data, key)
+        ) {
+          const value = data[key];
+          // 加密每个字段的值
+          const encrypted = encryptAndCompressSync(value);
+          if (encrypted) {
+            encryptedData[key] = encrypted;
+          } else {
+            // 如果加密失败，保留原始值
+            encryptedData[key] = value;
+          }
+        }
       }
+
+      return encryptedData as unknown as T;
     } catch (error) {
       console.error("[ResponseEncrypt] 加密响应数据失败:", error);
     }

@@ -12,11 +12,12 @@ const loginRoutes = new Hono();
  */
 loginRoutes.post(
   "/auth/login",
-  // ✅ Zod 验证中间件：自动验证请求体，验证失败自动返回 400
+  // ✅ Zod 验证中间件：自动验证、解密请求体，验证失败自动返回 400
   validator("json", loginSchema),
   async (c) => {
-    // ✅ 验证通过后，c.req.valid("json") 返回已验证且类型安全的数据
-    const { username, password } = c.req.valid("json") as LoginSchema;
+    // ✅ 验证通过后，c.req.valid("json") 返回已验证、已解密且类型安全的数据
+    const validData = (c.req as any).valid("json");
+    const { username, password } = validData as LoginSchema;
 
     const response: LoginResponse = await c.services.auth.login(
       username,

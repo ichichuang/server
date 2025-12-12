@@ -11,9 +11,30 @@
 ## 请求验证
 
 - 使用 Zod Schema（`src/validators/schemas/*`）+ `validator("json", schema)`。
-- 在路由中直接：`const data = c.req.valid("json")`，无需手动校验。
+- 在路由中直接：`const data = (c.req as any).valid("json")`，无需手动校验。
+- **自动解密**: `validator` 中间件会自动检测并解密带有 `isSafeStorage: true` 的请求数据。
 - 验证失败由全局 `errorHandler` 捕获并返回 `ERR_VALIDATION` 400。
 - **注意**：登录接口的密码验证不检查长度（只检查非空），密码长度验证应在注册接口中使用。
+
+### 使用示例
+
+```typescript
+// 定义 Schema
+export const loginSchema = z.object({
+  username: z.string().min(1, "用户名不能为空"),
+  password: z.string().min(1, "密码不能为空"),
+});
+
+// 在路由中使用
+loginRoutes.post(
+  "/auth/login",
+  validator("json", loginSchema), // ✅ 自动验证 + 自动解密（如有加密）
+  async (c) => {
+    const { username, password } = (c.req as any).valid("json");
+    // username 和 password 已经是解密后且类型安全的数据
+  }
+);
+```
 
 ## 响应与加密
 
@@ -46,11 +67,23 @@
 
 ```ts
 loginRoutes.post("/auth/login", validator("json", loginSchema), async (c) => {
-  const { username, password } = c.req.valid("json");
+  // 获取已验证且已解密的数据
+  const validData = (c.req as any).valid("json");
+  const { username, password } = validData as LoginSchema;
+
+  // 调用业务服务
   const res = await c.services.auth.login(username, password);
+
+  // 返回响应（自动加密，如果 res 包含 isSafeStorage: true）
   return c.sendJson(res, "登录成功");
 });
 ```
+
+**说明**:
+
+- `validator` 会自动解密请求数据（如果有 `isSafeStorage: true`）
+- `c.sendJson` 会自动加密响应数据（如果有 `isSafeStorage: true`）
+- 详见 [加密传输架构文档](./ENCRYPTION.md)
 
 ## 错误示例（请避免）
 

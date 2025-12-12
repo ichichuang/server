@@ -8,7 +8,7 @@ export const loginSchema = z.object({
   username: z
     .string()
     .min(1, "用户名不能为空")
-    .max(50, "用户名长度不能超过50个字符")
+    // .max(50, "用户名长度不能超过50个字符")
     .trim(),
 
   password: z.string().min(1, "密码不能为空"),

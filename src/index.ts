@@ -21,6 +21,8 @@ app.onError(onErrorHandler);
 // 2. 注册服务中间件（依赖注入）
 app.use("*", servicesMiddleware());
 
+// 注意：请求解密逻辑已集成到 validator 中间件中，无需单独注册全局中间件
+
 // 3. 注册响应处理中间件（成功响应）
 app.use("*", responseHandler());
 
