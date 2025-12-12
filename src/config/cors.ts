@@ -3,7 +3,7 @@ import { env } from "./env.js";
 const DEFAULT_ORIGINS = [
   "http://localhost:8888",
   "https://www.server.wzdxcc.cloudns.org",
-  "https://www.example.wzdxcc.cloudns.org",
+  "https://www.ccd.wzdxcc.cloudns.org",
 ] as const;
 
 const DEFAULT_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"];
@@ -27,4 +27,3 @@ export const corsConfig = {
 };
 
 export type CorsConfig = typeof corsConfig;
-
