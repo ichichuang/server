@@ -63,11 +63,8 @@ export const validator = <T extends z.ZodTypeAny>(
         const validationResult = schema.safeParse(bodyToValidate);
 
         if (!validationResult.success) {
-          const zodError =
-            validationResult.error instanceof z.ZodError
-              ? validationResult.error
-              : new z.ZodError(validationResult.error.issues);
-          throw handleZodError(zodError);
+          // safeParse 返回的 error 已经是 ZodError 类型
+          throw handleZodError(validationResult.error);
         }
 
         // 设置验证后的数据，供 c.req.valid("json") 使用
@@ -91,11 +88,8 @@ export const validator = <T extends z.ZodTypeAny>(
   // 非 JSON 验证，直接使用原始验证器
   return zValidator(target, schema, (result) => {
     if (!result.success) {
-      const zodError =
-        result.error instanceof z.ZodError
-          ? result.error
-          : new z.ZodError(result.error.issues);
-      throw handleZodError(zodError);
+      // safeParse 返回的 error 已经是 ZodError 类型
+      throw handleZodError(result.error as any);
     }
   });
 };

@@ -6,7 +6,7 @@ import { ErrorCodes } from "../errors/errorCodes.js";
  * 将 Zod 验证错误转换为 AppError
  * 用于在验证失败时抛出统一的业务错误
  */
-export function handleZodError<T>(error: z.ZodError<T>): AppError {
+export function handleZodError(error: z.ZodError<any>): AppError {
   // 获取第一个错误信息（通常是最重要的）
   const firstError = error.issues[0];
 
@@ -28,7 +28,7 @@ export function handleZodError<T>(error: z.ZodError<T>): AppError {
  * 自定义 Zod 错误格式化函数
  * 用于在验证中间件中生成友好的错误消息
  */
-export function formatZodError<T>(error: z.ZodError<T>): string {
+export function formatZodError(error: z.ZodError<any>): string {
   const errors = error.issues.map((err) => {
     const path = err.path.length > 0 ? err.path.join(".") : "根对象";
     return `${path}: ${err.message}`;
