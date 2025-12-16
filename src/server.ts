@@ -2,20 +2,21 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createServer } from "net";
+import { loginRoutes } from "./api/auth/login.js";
+import { routerRoutes } from "./api/auth/router.js";
+import { userInfoRoutes } from "./api/auth/userInfo.js";
+import { downloadRoutes } from "./api/download/download.js";
+import { exampleRoutes } from "./api/example/example.js";
+import { healthRoutes } from "./api/health/health.js";
+import { tableRoutes } from "./api/table/table.js";
+import { testRoutes } from "./api/test/test.js";
+import { chunkUploadRoutes } from "./api/upload/chunk.js";
+import { uploadRoutes } from "./api/upload/upload.js";
 import { corsConfig } from "./config/cors.js";
 import { env } from "./config/env.js";
 import { errorHandler, onErrorHandler } from "./middleware/errorHandler.js";
-import { servicesMiddleware } from "./middleware/services.js";
 import { responseHandler } from "./middleware/responseHandler.js";
-import { testRoutes } from "./api/test/test.js";
-import { loginRoutes } from "./api/auth/login.js";
-import { userInfoRoutes } from "./api/auth/userInfo.js";
-import { routerRoutes } from "./api/auth/router.js";
-import { exampleRoutes } from "./api/example/example.js";
-import { uploadRoutes } from "./api/upload/upload.js";
-import { chunkUploadRoutes } from "./api/upload/chunk.js";
-import { downloadRoutes } from "./api/download/download.js";
-import { healthRoutes } from "./api/health/health.js";
+import { servicesMiddleware } from "./middleware/services.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();
@@ -55,6 +56,8 @@ app.route("/", downloadRoutes);
 
 // 注册健康检查路由
 app.route("/", healthRoutes);
+// 注册表格示例路由
+app.route("/", tableRoutes);
 
 app.get("/", (c) => {
   return c.json({
@@ -119,4 +122,3 @@ const startServer = async () => {
 
 // 直接启动 Node.js 服务器（本地开发环境）
 startServer();
-
