@@ -8,6 +8,7 @@ import { testRoutes } from "./api/test/test.js";
 import { loginRoutes } from "./api/auth/login.js";
 import { userInfoRoutes } from "./api/auth/userInfo.js";
 import { routerRoutes } from "./api/auth/router.js";
+import { tableRoutes } from "./api/table/table.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();
@@ -36,6 +37,9 @@ app.route("/", testRoutes);
 app.route("/", loginRoutes);
 app.route("/", userInfoRoutes);
 app.route("/", routerRoutes);
+
+// 注册表格示例路由
+app.route("/", tableRoutes);
 
 app.get("/", (c) => {
   return c.json({
