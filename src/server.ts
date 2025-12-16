@@ -11,6 +11,11 @@ import { testRoutes } from "./api/test/test.js";
 import { loginRoutes } from "./api/auth/login.js";
 import { userInfoRoutes } from "./api/auth/userInfo.js";
 import { routerRoutes } from "./api/auth/router.js";
+import { exampleRoutes } from "./api/example/example.js";
+import { uploadRoutes } from "./api/upload/upload.js";
+import { chunkUploadRoutes } from "./api/upload/chunk.js";
+import { downloadRoutes } from "./api/download/download.js";
+import { healthRoutes } from "./api/health/health.js";
 
 // 创建 Hono 应用实例
 const app = new Hono();
@@ -37,6 +42,19 @@ app.route("/", testRoutes);
 app.route("/", loginRoutes);
 app.route("/", userInfoRoutes);
 app.route("/", routerRoutes);
+
+// 注册示例接口路由
+app.route("/", exampleRoutes);
+
+// 注册文件上传路由
+app.route("/", uploadRoutes);
+app.route("/", chunkUploadRoutes);
+
+// 注册文件下载路由
+app.route("/", downloadRoutes);
+
+// 注册健康检查路由
+app.route("/", healthRoutes);
 
 app.get("/", (c) => {
   return c.json({
