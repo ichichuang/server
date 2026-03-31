@@ -1,73 +1,26 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { loginRoutes } from "./api/auth/login.js";
-import { routerRoutes } from "./api/auth/router.js";
-import { userInfoRoutes } from "./api/auth/userInfo.js";
-import { downloadRoutes } from "./api/download/download.js";
-import { exampleRoutes } from "./api/example/example.js";
-import { healthRoutes } from "./api/health/health.js";
-import { tableRoutes } from "./api/table/table.js";
-import { testRoutes } from "./api/test/test.js";
-import { chunkUploadRoutes } from "./api/upload/chunk.js";
-import { uploadRoutes } from "./api/upload/upload.js";
-import { corsConfig } from "./config/cors.js";
-import { errorHandler, onErrorHandler } from "./middleware/errorHandler.js";
-import { responseHandler } from "./middleware/responseHandler.js";
-import { servicesMiddleware } from "./middleware/services.js";
+import { logger } from "hono/logger";
+import usersRoute from "./routes/users.js";
 
-// 创建 Hono 应用实例
 const app = new Hono();
 
-// 1. 首先注册错误处理中间件（必须在最前面，以捕获所有后续的错误）
-app.use("*", errorHandler());
+// Basic Middlewares
+app.use("*", logger());
+app.use(
+  "*",
+  cors({
+    origin: "*", // Allow all for demo purposes
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
+  }),
+);
 
-// 1.1 同时注册 onError 处理器作为最后的安全网（确保所有错误都被捕获）
-app.onError(onErrorHandler);
+// Health check
+app.get("/health", (c) =>
+  c.json({ status: "ok", timestamp: new Date().toISOString() }),
+);
 
-// 2. 注册服务中间件（依赖注入）
-app.use("*", servicesMiddleware());
+app.route("/api/v1/users", usersRoute);
 
-// 注意：请求解密逻辑已集成到 validator 中间件中，无需单独注册全局中间件
-
-// 3. 注册响应处理中间件（成功响应）
-app.use("*", responseHandler());
-
-// CORS 配置 - 支持前端跨域请求
-app.use("*", cors(corsConfig));
-
-// 注册测试路由
-app.route("/", testRoutes);
-
-// 注册认证相关路由
-app.route("/", loginRoutes);
-app.route("/", userInfoRoutes);
-app.route("/", routerRoutes);
-
-// 注册示例接口路由
-app.route("/", exampleRoutes);
-
-// 注册文件上传路由
-app.route("/", uploadRoutes);
-app.route("/", chunkUploadRoutes);
-
-// 注册文件下载路由
-app.route("/", downloadRoutes);
-
-// 注册健康检查路由
-app.route("/", healthRoutes);
-// 注册表格示例路由
-app.route("/", tableRoutes);
-
-app.get("/", (c) => {
-  return c.json({
-    message: "ccd-server",
-    description: "ccd-server api",
-    endpoints: {},
-    server: "ccd-server with Hono",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Vercel 部署时，仅需要导出 app 实例
-// Hono 框架使用标准的 Web API (Fetch API)，与 Vercel Serverless Function 完美兼容
 export default app;
