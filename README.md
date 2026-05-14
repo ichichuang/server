@@ -1,152 +1,213 @@
-# CCD Server (Hono + TypeScript)
+# CCD Server
 
-轻量后端服务，提供加密传输、统一验证/错误处理、依赖注入的业务分层，并配套单元测试与覆盖率门槛。
+CCD 展示架构配套的轻量 API 服务。当前服务只提供演示用户数据，不包含认证、数据库、加密传输或复杂业务层。
 
-## 📚 文档导航
+## 技术栈
 
-> 💡 不知道看哪个文档？查看 [文档索引](./DOCS_INDEX.md) 获取详细指引
-
-### 核心文档
-
-- **[README](./README.md)** - 项目概览和快速开始（本文档）
-- **[开发指南](./DEVELOPER_GUIDE.md)** - 架构、分层、验证、错误处理等开发约定
-- **[快速参考](./QUICK_REFERENCE.md)** - 加密传输快速参考卡片
-
-### 加密传输相关
-
-- **[加密传输架构](./ENCRYPTION.md)** - 完整的数据加密传输机制说明
-- **[加密传输测试](./TEST_ENCRYPTION.md)** - 加密功能测试指南和示例
-- **[加密功能变更日志](./CHANGELOG_ENCRYPTION.md)** - 加密系统的实现细节和变更记录
-
-### 其他
-
-- **[文档索引](./DOCS_INDEX.md)** - 所有文档的概览和使用指南
+- Hono：轻量 HTTP 框架
+- TypeScript：类型约束与构建
+- Zod + `@hono/zod-validator`：查询参数校验
+- `@hono/node-server`：本地 Node 运行入口
 
 ## 快速开始
 
 ```bash
 pnpm install
-pnpm dev          # 本地开发
-pnpm build && pnpm start
+pnpm dev
 ```
 
-## 主要能力
+默认端口：`3003`。
 
-- **分层架构**：薄路由、厚服务（`src/services`），通用工具在 `src/libs`，配置集中 `src/config`。
-- **依赖注入**：`servicesMiddleware` 注入 `c.services`，`responseHandler` 注入 `c.sendJson`。
-- **请求验证**：Zod + `validator`，`c.req.valid()` 获取类型安全数据，自动支持加密解密。
-- **统一错误**：`AppError` + 全局 `errorHandler`，隐藏敏感信息。
-- **🔐 加密传输**：`safeStorage` 支持 `isSafeStorage` 自动加解密，AES + LZ 压缩；密钥来自 `env.appSecret`。
-- **测试与覆盖率**：Vitest，覆盖率阈值聚焦服务层。
+可通过环境变量覆盖端口：
 
-## 加密传输快速上手
-
-### 前端调用
-
-```typescript
-// 添加 isSafeStorage: true 即可启用加密
-await login({
-  username: "admin",
-  password: "123456",
-  isSafeStorage: true, // ✅ 自动加密所有字段
-});
+```bash
+PORT=3004 pnpm dev
 ```
-
-### 后端实现
-
-```typescript
-// 使用 validator 自动支持加密解密
-loginRoutes.post(
-  "/auth/login",
-  validator("json", loginSchema), // ✅ 自动解密请求
-  async (c) => {
-    const { username, password } = (c.req as any).valid("json");
-    // 数据已自动解密，可直接使用
-    const response = await c.services.auth.login(username, password);
-    return c.sendJson(response, "登录成功");
-  }
-);
-```
-
-**详细说明**: 查看 [加密传输架构文档](./ENCRYPTION.md)
-
-## 开发约定
-
-请阅读完整指南：[`DEVELOPER_GUIDE.md`](./DEVELOPER_GUIDE.md)
-
-核心要点：
-
-- 路由只做 HTTP 流程，业务逻辑写在 `services`，通过 `c.services.*` 调用。
-- 成功响应用 `c.sendJson(data, message)`；错误抛 `AppError.*`。
-- 参数验证用 Zod Schema + `validator("json", schema)`（自动支持加密解密）。
-- 配置从 `env.ts`/`cors.ts` 获取，不直接使用 `process.env`。
 
 ## 脚本
 
 ```bash
-pnpm dev          # 开发
-pnpm build        # 构建
-pnpm start        # 运行构建产物
-pnpm test         # 运行测试（watch）
-pnpm test:run     # 一次性测试
-pnpm coverage     # 覆盖率报告
+pnpm dev          # 开发模式，监听 src/server.ts
+pnpm check        # TypeScript 类型检查
+pnpm build        # 构建到 dist
+pnpm start        # 运行 dist/server.js
 ```
 
-## 目录速览
+## 目录结构
 
-- `src/config`：env/cors 配置
-- `src/libs`：通用工具
-  - `safeStorage.ts` - 加密解密核心实现（AES + LZ 压缩）
-  - `requestDecrypt.ts` - 请求数据解密处理
-  - `responseEncrypt.ts` - 响应数据加密处理
-  - `tokenManager.ts` - JWT 令牌管理
-- `src/services`：业务服务（authService 等）
-- `src/middleware`：
-  - `validator.ts` - 请求验证中间件（集成自动解密）
-  - `responseHandler.ts` - 响应处理（集成自动加密）
-  - `errorHandler.ts` - 统一错误处理
-  - `services.ts` - 依赖注入
-- `src/api`：路由入口（auth、test 等）
-- `src/validators`：Zod Schema 与错误处理
-- `src/types`：全局类型扩展（如 Context augmentation）
+```text
+src/
+  index.ts        # Hono app、全局中间件、路由挂载
+  server.ts       # Node server 启动入口
+  routes/
+    users.ts      # 用户 mock 数据接口
+```
 
-## 技术栈
+## 架构边界
 
-- **框架**: [Hono](https://hono.dev/) - 轻量级 Web 框架
-- **语言**: TypeScript
-- **验证**: [Zod](https://zod.dev/) - TypeScript-first schema 验证
-- **加密**: crypto-js (AES) + lz-string (压缩)
-- **测试**: Vitest
-- **部署**: Vercel Serverless
+当前目标是服务 CCD 展示流，因此保持以下约束：
 
-## 支持的接口
+- 数据保存在进程内存中，服务重启后恢复初始 mock 数据。
+- 不引入数据库、ORM、认证、权限、缓存或任务队列。
+- 不新增服务层抽象，除非接口数量或业务规则明显增长。
+- 响应格式保持稳定，方便前端展示页直接接入。
 
-### 认证接口
+## 全局中间件
 
-- `POST /auth/login` - 用户登录（支持加密传输）
-- `GET /auth/userInfo` - 获取用户信息
-- `GET /auth/routes` - 获取路由配置
+`src/index.ts` 中启用：
 
-### 测试接口
+- `logger()`：输出请求日志
+- `cors()`：展示环境允许跨域访问
 
-- `GET /test/get` - GET 测试
-- `POST /test/post` - POST 测试（支持加密传输）
-- `PUT /test/put` - PUT 测试（支持加密传输）
-- `DELETE /test/delete` - DELETE 测试
+CORS 当前配置为 `origin: "*"`, 仅适合本地和展示场景。
 
-所有使用 `validator("json", schema)` 的接口都自动支持加密解密。
+## 接口
 
-## 贡献指南
+### Health
 
-1. 遵循 [开发指南](./DEVELOPER_GUIDE.md) 中的规范
-2. 新增接口需要：
-   - 定义 Zod Schema (`src/validators/schemas/`)
-   - 使用 `validator` 中间件（自动支持加密）
-   - 业务逻辑放在 `services` 层
-   - 编写单元测试
-3. 提交前运行 `pnpm test` 和 `pnpm coverage`
+```http
+GET /health
+```
 
----
+响应：
 
-**License**: MIT  
-**维护者**: Server Team
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-05-14T00:00:00.000Z"
+}
+```
+
+### 用户列表
+
+```http
+GET /api/v1/users
+```
+
+查询参数：
+
+| 参数 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `page` | number | `1` | 页码，最小为 1 |
+| `limit` | number | `12` | 每页数量，最大为 100 |
+| `search` | string | - | 按用户名模糊搜索 |
+| `gender` | string | - | 按性别过滤 |
+| `sortBy` | string | - | 排序字段 |
+| `order` | `asc` / `desc` | - | 排序方向 |
+
+响应：
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "list": [],
+    "total": 0
+  }
+}
+```
+
+### 新增用户
+
+```http
+POST /api/v1/users
+Content-Type: application/json
+```
+
+请求体会直接合并到新用户对象，并自动生成：
+
+- `id`
+- `createdAt`
+
+响应：
+
+```json
+{
+  "code": 200,
+  "message": "Created successfully",
+  "data": {
+    "id": 1710000000000,
+    "createdAt": "2026-05-14T00:00:00.000Z"
+  }
+}
+```
+
+### 更新用户
+
+```http
+PUT /api/v1/users/:id
+Content-Type: application/json
+```
+
+响应：
+
+```json
+{
+  "code": 200,
+  "message": "Updated successfully",
+  "data": null
+}
+```
+
+用户不存在时返回：
+
+```json
+{
+  "code": 404,
+  "message": "User not found",
+  "data": null
+}
+```
+
+### 删除用户
+
+```http
+DELETE /api/v1/users/:id
+```
+
+响应：
+
+```json
+{
+  "code": 200,
+  "message": "Deleted successfully",
+  "data": null
+}
+```
+
+## 数据模型
+
+```ts
+type User = {
+  id: number;
+  name: string;
+  gender: string;
+  age: number;
+  email: string;
+  phone: string;
+  status: "active" | "inactive";
+  createdAt: string;
+};
+```
+
+## 适用场景
+
+适合：
+
+- CCD 前端展示页
+- 表格、分页、搜索、排序、增删改演示
+- 本地开发和演示部署
+
+不适合：
+
+- 生产数据服务
+- 多实例一致性
+- 用户认证和权限控制
+- 长期数据持久化
+
+## 变更原则
+
+- 优先保持简单，避免为了展示服务引入重架构。
+- 新接口优先放在 `src/routes` 下。
+- 如果 mock 数据或校验规则变复杂，再考虑拆分 `mock`、`schema` 或 `service` 文件。
